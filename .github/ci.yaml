@@ -1,0 +1,44 @@
+name: Build and optionally Push Docker Image to ECR using OIDC
+
+on:
+  push:
+    branches:
+      - feat/*
+environment: development
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      PUSH_TO_ECR: ${{ vars.PUSH_TO_ECR }} 
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials using OIDC
+      if: env.PUSH_TO_ECR == 'true'
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        aws-region: ${{ vars.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      if: env.PUSH_TO_ECR == 'true'
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build Docker image
+      run: |
+        docker build -t myapp:latest .
+        if [ "${{ env.PUSH_TO_ECR }}" = "true" ]; then
+          docker tag myapp:latest ${{ steps.login-ecr.outputs.registry }}/myapp:latest
+        fi
+
+    - name: Push Docker image to ECR
+      if: env.PUSH_TO_ECR == 'true'
+      run: docker push ${{ steps.login-ecr.outputs.registry }}/${{ vars.REPO_NAME }}:${{ github.sha }}
