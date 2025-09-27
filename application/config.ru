@@ -7,11 +7,16 @@ class HostNameMiddleware
   end
 
   def call(env)
-    # Set a default SERVER_NAME if none is provided
-    env["SERVER_NAME"] = "localhost" if env["SERVER_NAME"].nil? || env["SERVER_NAME"].empty?
+    # Use the actual host from the request headers, fallback to a valid hostname if not present
+    host = env["HTTP_HOST"] || env["SERVER_NAME"] || "localhost"
     
-    # Always allow the request to proceed regardless of host
-    # For production, the recommended approach is define a more restrictive policy.
+    # Ensure the host is valid according to Rack::Lint requirements
+    # Strip any port number if present
+    host = host.split(":").first
+    
+    # Set the SERVER_NAME to the cleaned host
+    env["SERVER_NAME"] = host
+    
     @app.call(env)
   end
 end
