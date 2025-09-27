@@ -27,7 +27,7 @@ jobs:
 
     - name: Build Docker image
       run: |
-        cd application \
+        cd application
         docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.REPO_NAME }}:latest .
         
 
