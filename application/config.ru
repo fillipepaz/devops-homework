@@ -12,7 +12,7 @@ class HostNameMiddleware
     
     # Ensure the host is valid according to Rack::Lint requirements
     # Strip any port number if present
-    host = host.split(":").first
+    host = host.split("/").first
     
     # Set the SERVER_NAME to the cleaned host
     env["SERVER_NAME"] = host
