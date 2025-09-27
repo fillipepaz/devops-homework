@@ -1,44 +1,36 @@
-name: Build and optionally Push Docker Image to ECR using OIDC
+name: Build and Push Docker Image to Docker Hub
 
 on:
   push:
     branches:
-      - feat/*
-environment: development
+      - develop
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    environment: development
 
     permissions:
-      id-token: write
       contents: read
 
     env:
-      PUSH_TO_ECR: ${{ vars.PUSH_TO_ECR }} 
+      PUSH_TO_DOCKER_HUB: ${{ vars.PUSH_TO_DOCKER_HUB }} 
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Configure AWS credentials using OIDC
-      if: env.PUSH_TO_ECR == 'true'
-      uses: aws-actions/configure-aws-credentials@v2
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
       with:
-        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-        aws-region: ${{ vars.AWS_REGION }}
-
-    - name: Login to Amazon ECR
-      id: login-ecr
-      if: env.PUSH_TO_ECR == 'true'
-      uses: aws-actions/amazon-ecr-login@v1
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Build Docker image
       run: |
-        docker build -t myapp:latest .
-        if [ "${{ env.PUSH_TO_ECR }}" = "true" ]; then
-          docker tag myapp:latest ${{ steps.login-ecr.outputs.registry }}/myapp:latest
-        fi
+        cd application \
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.REPO_NAME }}:latest .
+        
 
-    - name: Push Docker image to ECR
-      if: env.PUSH_TO_ECR == 'true'
-      run: docker push ${{ steps.login-ecr.outputs.registry }}/${{ vars.REPO_NAME }}:${{ github.sha }}
+    - name: Push Docker image
+      run: |
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.REPO_NAME }}:latest
