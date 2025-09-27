@@ -1,11 +1,43 @@
 locals {
   aws_region = "us-east-1"
-  environment = path_relative_to_include()
-  cluster_version = "1.30"
-  instance_types  = ["t3.medium"]
-  min_size       = 2
-  max_size       = 4
-  desired_size   = 3
+  
+  # Get just the environment name (stage, demo, or prod) from the path
+  environment = split("/", path_relative_to_include())[0]
+
+  # Environment-specific configurations
+  env_configs = {
+    stage = {
+      cluster_version = "1.33"
+      instance_types  = ["t3.medium"]
+      min_size       = 1
+      max_size       = 3
+      desired_size   = 1
+    }
+    demo = {
+      cluster_version = "1.33"
+      instance_types  = ["t3.medium"]
+      min_size       = 2
+      max_size       = 4
+      desired_size   = 2
+    }
+    prod = {
+      cluster_version = "1.33"
+      instance_types  = ["t3.large"]
+      min_size       = 3
+      max_size       = 6
+      desired_size   = 3
+    }
+  }
+
+  # Get configuration for current environment
+  env_config = local.env_configs[local.environment]
+
+  # Extract values for current environment
+  cluster_version = local.env_config.cluster_version
+  instance_types  = local.env_config.instance_types
+  min_size       = local.env_config.min_size
+  max_size       = local.env_config.max_size
+  desired_size   = local.env_config.desired_size
   
   # Common tags
   common_tags = {
@@ -27,7 +59,7 @@ remote_state {
     key            = "${path_relative_to_include()}/terraform.tfstate"
     region         = local.aws_region
     encrypt        = true
-    dynamodb_table = "terraform-locks-${get_aws_account_id()}"
+    dynamodb_table = "terraform-locks-${get_aws_account_id()}-${local.environment}"
   }
 }
 

@@ -44,34 +44,20 @@ module "vpc" {
 
   private_subnet_tags = merge(local.common_tags, {
     "kubernetes.io/role/internal-elb" = "1"
-    "kubernetes.io/cluster/${local.name}" = "shared"
+    "kubernetes.io/cluster/eks-${var.environment}" = "shared"
     Tier = "Private"
   })
 
   public_subnet_tags = merge(local.common_tags, {
     "kubernetes.io/role/elb" = "1"
-    "kubernetes.io/cluster/${local.name}" = "shared"
+    "kubernetes.io/cluster/eks-${var.environment}" = "shared"
     Tier = "Public"
   })
 
   tags = local.common_tags
 }
 
-# Data sources for existing VPC and subnets validation
-data "aws_vpc" "existing" {
-  count = var.create_vpc ? 0 : 1
-  id    = var.vpc_id
-}
 
-data "aws_subnet" "private" {
-  count = var.create_vpc ? 0 : length(var.private_subnets)
-  id    = var.private_subnets[count.index]
-}
-
-data "aws_subnet" "public" {
-  count = var.create_vpc ? 0 : length(var.public_subnets)
-  id    = var.public_subnets[count.index]
-}
 
 output "vpc_id" {
   value = local.vpc_id

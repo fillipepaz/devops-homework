@@ -3,12 +3,10 @@ include "root" {
 }
 
 locals {
-  environment = "stage"
+  environment = "demo"
 }
 
-terraform {
-  source = "../../modules//application"
-}
+
 
 dependencies {
   paths = ["../03-kubernetes-components"]
@@ -61,7 +59,15 @@ inputs = {
   chart_path = "${get_repo_root()}/helm/ruby-app"
 }
 
-# Output the application URL after apply
-output "application_url" {
-  value = "Application will be available at: http://${dependency.application.outputs.application_url}"
+terraform {
+  source = "../../modules//application"
 }
+# Show application URL after successful apply
+
+/*terraform {
+  
+  after_hook "show_app_url" {
+    commands = ["apply"]
+    execute  = ["sh", "-c", "echo '\nApplication will be available at: http://'$(terraform output -raw application_url)'\n'"]
+  }
+}*/

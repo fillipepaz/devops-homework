@@ -1,11 +1,4 @@
-# Get EKS cluster data
-data "aws_eks_cluster" "this" {
-  name = var.cluster_name
-}
 
-data "aws_eks_cluster_auth" "this" {
-  name = var.cluster_name
-}
 
 terraform {
   required_providers {
@@ -21,6 +14,23 @@ terraform {
       source  = "hashicorp/aws"
       version = "5.17"
     }
+  }
+}
+
+# Get EKS cluster data
+data "aws_eks_cluster" "this" {
+  name = var.cluster_name
+}
+
+data "aws_eks_cluster_auth" "this" {
+  name = var.cluster_name
+}
+
+# Get the LoadBalancer DNS name
+data "kubernetes_service" "ingress_nginx" {
+  metadata {
+    name      = "nginx-ingress-ingress-nginx-controller"
+    namespace = "ingress-nginx"
   }
 }
 
@@ -48,7 +58,7 @@ resource "helm_release" "ruby_app" {
         className = var.ingress_class_name
         hosts = [
           {
-            host = var.app_domain
+            host = var.use_nlb_dns ? data.kubernetes_service.ingress_nginx.status.0.load_balancer.0.ingress.0.hostname : var.app_domain
             paths = [
               {
                 path = var.ingress_path
@@ -57,6 +67,24 @@ resource "helm_release" "ruby_app" {
             ]
           }
         ]
+        annotations = {
+          "nginx.ingress.kubernetes.io/enable-cors" = "true"
+          "nginx.ingress.kubernetes.io/ssl-redirect" = "false"
+          "nginx.ingress.kubernetes.io/force-ssl-redirect" = "false"
+          "nginx.ingress.kubernetes.io/rewrite-target" = "/"
+          "nginx.ingress.kubernetes.io/backend-protocol" = "HTTP"
+          "nginx.ingress.kubernetes.io/proxy-send-timeout" = "3600"
+          "nginx.ingress.kubernetes.io/proxy-read-timeout" = "3600"
+          "nginx.ingress.kubernetes.io/configuration-snippet" = <<-EOT
+            proxy_set_header X-Forwarded-Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-Port $server_port;
+            proxy_set_header Host "localhost";
+            proxy_set_header SERVER_NAME "localhost";
+          EOT
+        }
       }
 
       probes = {

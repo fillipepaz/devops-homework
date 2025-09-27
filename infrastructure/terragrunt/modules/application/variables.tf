@@ -4,9 +4,16 @@ variable "app_replicas" {
   default     = 2
 }
 
+variable "use_nlb_dns" {
+  description = "Whether to use NLB DNS instead of custom domain"
+  type        = bool
+  default     = true
+}
+
 variable "app_domain" {
-  description = "Domain name for the application"
+  description = "Domain name for the application (used when use_nlb_dns is false)"
   type        = string
+  default     = ""
 }
 
 variable "environment" {
@@ -112,7 +119,7 @@ variable "image_tag" {
 variable "image_pull_policy" {
   description = "Docker image pull policy"
   type        = string
-  default     = "IfNotPresent"
+  default     = "Always"
 }
 
 variable "hpa_enabled" {
