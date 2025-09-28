@@ -1,0 +1,58 @@
+name: Update Image Version
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+    branches:
+      - develop
+
+jobs:
+  update-version:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get CI workflow info
+        id: workflow_info
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const run = await github.rest.actions.getWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: ${{ github.event.workflow_run.id }}
+            });
+            core.exportVariable('COMMIT_SHA', run.data.head_sha);
+
+      - name: Update root.hcl
+        run: |
+          # Update app_version in demo and prod environments to use the commit SHA
+          sed -i "/demo = {/,/}/{s/app_version[[:space:]]*=[[:space:]]*\".*\"/app_version = \"${{ env.COMMIT_SHA }}\"/}" infrastructure/terragrunt/root.hcl
+          sed -i "/prod = {/,/}/{s/app_version[[:space:]]*=[[:space:]]*\".*\"/app_version = \"${{ env.COMMIT_SHA }}\"/}" infrastructure/terragrunt/root.hcl
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update application version to ${{ env.COMMIT_SHA }}"
+          title: "chore: update application version to ${{ env.COMMIT_SHA }}"
+          body: |
+            This PR updates the application version in root.hcl to use the image tag from the latest successful CI run.
+            
+            Image Tag (Commit SHA): `${{ env.COMMIT_SHA }}`
+            CI Run: ${{ github.event.workflow_run.html_url }}
+            
+            This is an automated PR created after a successful CI run.
+          branch: "chore/update-app-version-${{ env.COMMIT_SHA }}"
+          base: "main"
+          labels: |
+            automated
+            version-update
+          delete-branch: true

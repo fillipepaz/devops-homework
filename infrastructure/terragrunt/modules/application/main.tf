@@ -56,6 +56,9 @@ resource "helm_release" "ruby_app" {
       ingress = {
         enabled = var.ingress_enabled
         className = var.ingress_class_name
+        #annotations = {
+        #  "nginx.ingress.kubernetes.io/configuration-snippet" = "proxy_set_header Host $host;"
+        #}
         hosts = [
           {
             host = var.use_nlb_dns ? data.kubernetes_service.ingress_nginx.status.0.load_balancer.0.ingress.0.hostname : var.app_domain
@@ -73,20 +76,14 @@ resource "helm_release" "ruby_app" {
           "nginx.ingress.kubernetes.io/force-ssl-redirect" = "false"
           "nginx.ingress.kubernetes.io/rewrite-target" = "/"
           "nginx.ingress.kubernetes.io/backend-protocol" = "HTTP"
-          "nginx.ingress.kubernetes.io/proxy-send-timeout" = "3600"
-          "nginx.ingress.kubernetes.io/proxy-read-timeout" = "3600"
           "nginx.ingress.kubernetes.io/configuration-snippet" = <<-EOT
-            proxy_set_header X-Forwarded-Host $host;
+            proxy_ssl_verify off;
             proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_set_header X-Forwarded-Port $server_port;
-            proxy_set_header Host "localhost";
-            proxy_set_header SERVER_NAME "localhost";
           EOT
         }
+        
       }
-
+  #proxy_set_header Host $host;
       probes = {
         readiness = {
           enabled = var.readiness_probe_enabled

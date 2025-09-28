@@ -1,26 +1,15 @@
-require './app'
+# This file is used by Rack-based servers to start the application.
 
-# Middleware to handle any host
-class HostNameMiddleware
-  def initialize(app)
-    @app = app
-  end
+# Disable Rack::Lint in development
+ENV['RACK_ENV'] = 'production'
 
-  def call(env)
-    # Use the actual host from the request headers, fallback to a valid hostname if not present
-    host = env["HTTP_HOST"] || env["SERVER_NAME"] || "localhost"
-    
-    # Ensure the host is valid according to Rack::Lint requirements
-    # Strip any port number if present
-    host = host.split(":").first
-    
-    # Set the SERVER_NAME to the cleaned host
-    env["SERVER_NAME"] = host
-    
-    @app.call(env)
-  end
+app = lambda do |env|
+  [
+    200,
+    {'Content-Type' => 'text/html'},
+    ['<!DOCTYPE html><html><head><title>Hello World</title></head><body><h2>Hello World</h2></body></html>']
+  ]
 end
 
-# Use the middleware
-use HostNameMiddleware
-run App
+use Rack::ContentLength
+run app

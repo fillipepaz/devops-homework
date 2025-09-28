@@ -61,7 +61,4 @@ inputs = {
   chart_path = "${get_repo_root()}/helm/ruby-app"
 }
 
-# Output the application URL after apply
-output "application_url" {
-  value = "Application will be available at: http://${dependency.application.outputs.application_url}"
-}
+

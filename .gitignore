@@ -52,9 +52,62 @@ build-iPhoneSimulator/
 # Gemfile.lock
 # .ruby-version
 # .ruby-gemset
+# Ruby specific
+*# Ruby specific
+*.gem
+*.rbc
+/.config
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/spec/examples.txt
+/test/tmp/
+/test/version_tmp/
+/tmp/
 
-# unless supporting rvm < 1.11.0 or doing something fancy, ignore this:
-.rvmrc
+# Bundler specific
+/.bundle/
+/vendor/bundle
+/lib/bundler/man/
+
+# Environment specific
+.env
+.env.*
+!.env.example
+
+# Credentials and secrets
+/config/master.key
+/config/credentials.yml.enc
+*.key
+*.pem
+
+# Logs
+*.log
+log/*
+!/log/.keep
+
+# Temp files
+*~
+.*.swp
+.DS_Store
+
+# Docker specific
+.docker-sync/
+docker-compose.override.yml
+
+# IDE specific
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# SQLite databases
+*.sqlite3
+*.sqlite3-journal
+
+# Node (if used for assets)
+node_modules/
 
 # Used by RuboCop. Remote config files pulled in from inherit_from directive.
 # .rubocop-https?--*
