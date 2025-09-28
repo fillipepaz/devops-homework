@@ -4,7 +4,7 @@ replicaCount: 2
 image:
   repository: ruby-app
   pullPolicy: IfNotPresent
-  tag: ""
+  tag: "11fbe385629a73de14cc10e21a810efe0f934794"
 
 nameOverride: ""
 fullnameOverride: ""
