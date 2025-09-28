@@ -1,0 +1,47 @@
+name: Update Image Version
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  update-version:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get image tag
+        id: get_tag
+        run: |
+          echo "IMAGE_TAG=$(date +'v%Y.%m.%d.%H%M')" >> $GITHUB_ENV
+
+      - name: Update root.hcl
+        run: |
+          # Update app_version in demo and prod environments
+          sed -i "s/app_version[[:space:]]*=[[:space:]]*\".*\"/app_version = \"${{ env.IMAGE_TAG }}\"/" infrastructure/terragrunt/root.hcl
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update application version to ${{ env.IMAGE_TAG }}"
+          title: "chore: update application version to ${{ env.IMAGE_TAG }}"
+          body: |
+            This PR updates the application version in root.hcl to ${{ env.IMAGE_TAG }}.
+            
+            This is an automated PR created after a successful CI run.
+          branch: "chore/update-app-version-${{ env.IMAGE_TAG }}"
+          base: "main"
+          labels: |
+            automated
+            version-update
+          delete-branch: true

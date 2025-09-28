@@ -1,56 +1,9 @@
-terraform {
-  required_version = ">= 1.5.0"
-  
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "5.19.0"
-    }
-  }
-}
 
-variable "environment" {
-  type        = string
-  description = "Environment name"
-}
 
-variable "create_vpc" {
-  type        = bool
-  description = "Controls if VPC should be created (it affects all VPC resources)"
-  default     = true
-}
 
-variable "vpc_id" {
-  type        = string
-  description = "ID of an existing VPC to use (if you don't want to create a new one)"
-  default     = ""
-}
-
-variable "vpc_cidr" {
-  type        = string
-  description = "CIDR block for VPC"
-  default     = "10.0.0.0/16"  # Provides space for multiple /19 subnets
-}
-
-variable "azs" {
-  type        = list(string)
-  description = "Availability zones"
-}
-
-variable "private_subnets" {
-  type        = list(string)
-  description = "List of existing private subnet IDs to use"
-  default     = []
-}
-
-variable "public_subnets" {
-  type        = list(string)
-  description = "List of existing public subnet IDs to use"
-  default     = []
-}
 
 locals {
-  name = "ruby-app-${var.environment}"
+  name = "vpc-${var.environment}"
   
   # Only calculate subnet CIDRs if creating new VPC
   vpc_id = var.create_vpc ? module.vpc[0].vpc_id : var.vpc_id
@@ -65,7 +18,7 @@ locals {
   common_tags = {
     Environment = var.environment
     Terraform   = "true"
-    Project     = "ruby-app"
+    Project     = var.project
     Name        = local.name
   }
 }
@@ -91,34 +44,20 @@ module "vpc" {
 
   private_subnet_tags = merge(local.common_tags, {
     "kubernetes.io/role/internal-elb" = "1"
-    "kubernetes.io/cluster/${local.name}" = "shared"
+    "kubernetes.io/cluster/eks-${var.environment}" = "shared"
     Tier = "Private"
   })
 
   public_subnet_tags = merge(local.common_tags, {
     "kubernetes.io/role/elb" = "1"
-    "kubernetes.io/cluster/${local.name}" = "shared"
+    "kubernetes.io/cluster/eks-${var.environment}" = "shared"
     Tier = "Public"
   })
 
   tags = local.common_tags
 }
 
-# Data sources for existing VPC and subnets validation
-data "aws_vpc" "existing" {
-  count = var.create_vpc ? 0 : 1
-  id    = var.vpc_id
-}
 
-data "aws_subnet" "private" {
-  count = var.create_vpc ? 0 : length(var.private_subnets)
-  id    = var.private_subnets[count.index]
-}
-
-data "aws_subnet" "public" {
-  count = var.create_vpc ? 0 : length(var.public_subnets)
-  id    = var.public_subnets[count.index]
-}
 
 output "vpc_id" {
   value = local.vpc_id
