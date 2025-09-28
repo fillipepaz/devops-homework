@@ -60,7 +60,7 @@ aws s3api create-bucket \
 
 # Enable versioning for state bucket (Optional)
 aws s3api put-bucket-versioning \
-    --bucket terraform-state-$(aws sts get-caller-identity --query 'Account' --output text)-us-east-1 \
+    --bucket terraform-state-$(aws sts get-caller-identity --query 'Account' --output text)-<YOUR-REGION> \
     --versioning-configuration Status=Enabled
 ```
 
