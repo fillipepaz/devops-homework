@@ -7,7 +7,7 @@ The commands of this documentation  were tested in bellow tools versions:
 - Terraform: v1.5.7
 - Terragrunt: v0.87.7
 
-## Execute locally using Minikube:
+## Execute locally using Minikube (Q1,Q2,Q3):
 
 ```bash
 # Start Minikube cluster
@@ -39,11 +39,55 @@ On terminal, close the port-forwarding and execute following command to switch b
 eval $(minikube docker-env -u)
 ```
 
-## Build and deploy application
+## Build and deploy application (Q4)
 
 The folder infrastructure/terragrunt has a structure to provisioning AWS resources (e.g VPC, subnets, EKS, Ingress Controller, etc).
 
 The folders have been organized in modules and environments.
+
+Prerequisites
+
+- Create a bucket for state files
+- Create DynamoDb tables for execution locks. It is important to avoid problems related concurrent executions.
+
+To create the S3 bucket for storing Terraform state:
+
+```bash
+# Create the S3 bucket
+aws s3api create-bucket \
+    --bucket terraform-state-$(aws sts get-caller-identity --query 'Account' --output text)-<YOUR-REGION> \
+    --region <YOUR-REGION>
+
+# Enable versioning for state bucket (Optional)
+aws s3api put-bucket-versioning \
+    --bucket terraform-state-$(aws sts get-caller-identity --query 'Account' --output text)-us-east-1 \
+    --versioning-configuration Status=Enabled
+```
+
+To create DynamoDB tables for state locking:
+
+```bash
+# Create table for demo environment
+aws dynamodb create-table \
+    --table-name terraform-locks-$(aws sts get-caller-identity --query 'Account' --output text)-demo \
+    --attribute-definitions AttributeName=LockID,AttributeType=S \
+    --key-schema AttributeName=LockID,KeyType=HASH \
+    --billing-mode PAY_PER_REQUEST
+
+# Create table for stage environment
+aws dynamodb create-table \
+    --table-name terraform-locks-$(aws sts get-caller-identity --query 'Account' --output text)-stage \
+    --attribute-definitions AttributeName=LockID,AttributeType=S \
+    --key-schema AttributeName=LockID,KeyType=HASH \
+    --billing-mode PAY_PER_REQUEST
+
+# Create table for prod environment
+aws dynamodb create-table \
+    --table-name terraform-locks-$(aws sts get-caller-identity --query 'Account' --output text)-prod \
+    --attribute-definitions AttributeName=LockID,AttributeType=S \
+    --key-schema AttributeName=LockID,KeyType=HASH \
+    --billing-mode PAY_PER_REQUEST
+```
 
 Execution:
 
