@@ -3,7 +3,7 @@ include "root" {
 }
 
 locals {
-  environment = "demo"
+  environment = "prod"
 }
 
 terraform {

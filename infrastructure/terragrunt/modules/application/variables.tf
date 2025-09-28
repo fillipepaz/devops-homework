@@ -29,7 +29,7 @@ variable "cluster_name" {
 variable "release_name" {
   description = "Name of the Helm release"
   type        = string
-  default     = "ruby-app"
+  default     = "ruby-app-2"
 }
 
 variable "chart_path" {
@@ -113,7 +113,7 @@ variable "image_repository" {
 variable "image_tag" {
   description = "Docker image tag"
   type        = string
-  default     = "latest"
+  default     = "11fbe385629a73de14cc10e21a810efe0f934794"
 }
 
 variable "image_pull_policy" {
