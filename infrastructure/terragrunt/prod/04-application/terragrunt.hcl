@@ -57,7 +57,7 @@ inputs = {
   use_nlb_dns = true
   app_replicas = 2
   chart_path = "${get_repo_root()}/helm/ruby-app"
-  image_tag = "06563a9905eb0a2d90ed5a0df64313d7bd789301"
+  image_tag = "a249cee33e45f3e123d1e282d489f78569fc5e2b"
 }
 
 terraform {
