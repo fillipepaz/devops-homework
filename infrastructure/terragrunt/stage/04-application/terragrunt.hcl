@@ -59,7 +59,7 @@ inputs = {
   use_nlb_dns = true
   app_replicas = 2
   chart_path = "${get_repo_root()}/helm/ruby-app"
-  image_tag = "a249cee33e45f3e123d1e282d489f78569fc5e2b"
+  image_tag = "25c50fcde672d6c37a6c5e9eee8e4324cb2e030c"
 }
 
 
