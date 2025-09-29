@@ -187,7 +187,7 @@ After that, a workflow can be triggered to execute terragrunt's apply on the app
 
 In the implemented example, separate terraform states were adopted for each environment and module, so the structure was as seen below:
 
-"bucket/<environment>/<module>/terraform.tfstate"
+"bucket/{{ environment }}/{{ module }}/terraform.tfstate"
 For example:
 
 s3://terraform-state-704151674151-us-east-1/demo/01-vpc/terraform.tfstate
