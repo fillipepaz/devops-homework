@@ -6,6 +6,7 @@ The commands of this documentation  were tested in bellow tools versions:
 - AWS CLI: 1.32.111
 - Terraform: v1.5.7
 - Terragrunt: v0.87.7
+- Kubectl: v1.23.4
 
 ## 1. Create an application that always responds with “Hello World” to web requests.
 
@@ -66,9 +67,14 @@ The folder infrastructure/terragrunt has a structure to provisioning AWS resourc
 The folders have been organized in modules and environments.
 
 Prerequisites
-
+- AWS Credentials configured in your machine
 - Create a bucket for state files
 - Create DynamoDb tables for execution locks. It is important to avoid problems related concurrent executions.
+
+Set up your AWS credentials:
+```bash
+export AWS_PROFILE=<your-profile>
+```
 
 To create the S3 bucket for storing Terraform state:
 
@@ -77,7 +83,8 @@ To create the S3 bucket for storing Terraform state:
 aws s3api create-bucket \
     --bucket terraform-state-$(aws sts get-caller-identity --query 'Account' --output text)-<YOUR-REGION> \
     --region <YOUR-REGION>
-
+```
+```bash
 # Enable versioning for state bucket (Optional)
 aws s3api put-bucket-versioning \
     --bucket terraform-state-$(aws sts get-caller-identity --query 'Account' --output text)-<YOUR-REGION> \
@@ -93,14 +100,16 @@ aws dynamodb create-table \
     --attribute-definitions AttributeName=LockID,AttributeType=S \
     --key-schema AttributeName=LockID,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
-
+```
+```bash
 # Create table for stage environment
 aws dynamodb create-table \
     --table-name terraform-locks-$(aws sts get-caller-identity --query 'Account' --output text)-stage \
     --attribute-definitions AttributeName=LockID,AttributeType=S \
     --key-schema AttributeName=LockID,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
-
+```
+```bash
 # Create table for prod environment
 aws dynamodb create-table \
     --table-name terraform-locks-$(aws sts get-caller-identity --query 'Account' --output text)-prod \
@@ -111,47 +120,68 @@ aws dynamodb create-table \
 
 Execution:
 
-1. Set up your AWS credentials:
-```bash
-export AWS_PROFILE=<your-profile>
-```
 
-2. Navigate to the target environment directory:
+
+1. Navigate to the target environment directory:
 ```bash
 cd infrastructure/terragrunt/demo
 ```
 
-3. Execute the infrastructure modules in order:
+2. Execute the infrastructure modules in order:
 
 VPC Module:
 ```bash
 cd 01-vpc
-terragrunt init \
-terragrunt plan \
+```
+```bash
+terragrunt init
+```
+```bash
+terragrunt plan 
+```
+```bash
 terragrunt apply
 ```
 
 EKS Module:
 ```bash
 cd ../02-eks
+```
+```bash
 terragrunt init
+```
+```bash
 terragrunt plan
+```
+```bash
 terragrunt apply
 ```
 
 Kubernetes Components:
 ```bash
 cd ../03-kubernetes-components
+```
+```bash
 terragrunt init
+```
+```bash
 terragrunt plan
+```
+```bash
 terragrunt apply
 ```
 
 Application Deployment:
 ```bash
 cd ../04-application
+```
+```bash
 terragrunt init
+```
+```bash
 terragrunt plan
+```
+```bash
 terragrunt apply
 ```
 
@@ -160,13 +190,19 @@ After the apply command completes, the NLB DNS will be available as output.
 Alternatively, you can execute all modules at once:
 ```bash
 cd infrastructure/terragrunt/demo
+```
+```bash
 terragrunt run-all plan    # Review all changes
+```
+```bash
 terragrunt run-all apply   # Apply all changes
 ```
 
 To destroy the infrastructure:
 ```bash
-cd infrastructure/terragrunt/demo
+cd ..
+```
+```bash
 terragrunt run-all destroy
 ```
 
@@ -281,3 +317,5 @@ the Checkov tool can be used for static code testing. The purpose in this case i
 - To simplify the helm chart implementation, the cluster API Server Endpoint has been made publicly available. For enterprise environments, it's recommended to keep this endpoint private, so that communication is only possible through a machine on the cluster's own network. This option has been maintained as a variable in the Terraform module.
 
 - The HTTPS enforcement was not applid, however is recommended for corporative environments.
+
+- Terraform lock files have been maintained in the Github repository to prevent issues with unintended dependency updates.
