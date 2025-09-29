@@ -21,7 +21,7 @@ cd application
 docker build -t ruby-app .
 
 # Install the Helm chart
-cd ../helm
+cd ../../helm/
 helm install ruby-app ruby-app
 ```
 
@@ -242,6 +242,9 @@ output "password" {
 If you want to create secrets via continuous integration, we recommend using Environment Secrets from Github Actions. Before applying the Terraform code to create/modify the secret, a step would replace predefined tokens in the Terraform/Terragrunt file with the values ​​registered in the Actions environment.
 Note that the replacement should occur during workflow execution in the runner, and after the code is applied, the file should be deleted.
 
+### Extras
 
+1. The Hello World application was developed using Ruby on Rails. The Docker Image is available in docker hub and it was published using Github Actions.
+Registry location: 0f846d460ec6a566e0c881528edfa08b77dbc385
 
 
