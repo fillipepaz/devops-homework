@@ -3,7 +3,7 @@ include "root" {
 }
 
 locals {
-  environment = "demo"
+  environment = "prod"
   # Toggle between creating new VPC or using existing one
   create_vpc = true  
   

@@ -99,10 +99,12 @@ module "eks" {
         Environment = var.environment
       }
 
-      # Add IAM policies for Ingress Controller
+      # Add IAM policies for node group
       iam_role_additional_policies = {
-        AWSLoadBalancerController = "arn:aws:iam::aws:policy/service-role/AWSLoadBalancerControllerIAMPolicy"
-        EC2NetworkingFullAccess   = "arn:aws:iam::aws:policy/AmazonEC2NetworkingFullAccess"
+        # Policy for managing EC2 networking
+        #networking = "arn:aws:iam::aws:policy/AmazonVPCFullAccess"
+        # Policy for ELB operations
+        elb = "arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess"
       }
 
       # Enable IMDSv2

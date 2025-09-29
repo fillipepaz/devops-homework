@@ -1,45 +1,59 @@
-# Single stage build for simplicity with Alpine
-FROM ruby:3.0-alpine
+# Stage 1 - Build
+FROM ruby:3.0.0-alpine as builder
 
-# Install dependencies
-RUN apk add --no-cache \
-    build-base \
-    sqlite-dev \
-    tzdata \
-    libc6-compat \
-    libstdc++
+# Install build dependencies
+RUN apk update && apk add --no-cache \
+  build-base \
+  nodejs \
+  postgresql-dev \
+  git
 
-# Create non-root user
-RUN adduser -D -h /app -s /bin/false app && \
-    mkdir -p /app/vendor/bundle && \
-    chown -R app:app /app/vendor
+# Install Bundler (Ruby dependency manager)
+RUN gem install bundler
 
 # Set working directory
-WORKDIR /app
+WORKDIR /myapp
 
-# Install specific bundler version
-RUN gem install bundler:2.4.22
+# Copy Gemfile and Gemfile.lock to the container
+COPY Gemfile Gemfile.lock ./
 
-# Switch to non-root user
-USER app
+# Install Ruby gems using Bundler
+RUN bundle install
 
-# Configure bundler
-ENV BUNDLE_PATH=/app/vendor/bundle \
-    BUNDLE_BIN=/app/vendor/bundle/bin \
-    BUNDLE_APP_CONFIG=/app/vendor/bundle
+# Copy the entire application source code to the container
+COPY . .
 
-# Copy application files
-COPY --chown=app:app . .
+# Stage 2 - Run
+FROM ruby:3.0.0-alpine
 
-# Install dependencies as app user
-RUN bundle config set --local path vendor/bundle && \
-    bundle install --jobs=4 --retry=3
+# Install runtime dependencies
+RUN apk add --no-cache \
+  nodejs \
+  postgresql-dev
 
-# Set production environment
-ENV RACK_ENV=production
+# Install Bundler (needed in runtime stage)
+RUN gem install bundler
 
-# Expose port
+# Set the working directory for the final stage
+WORKDIR /myapp
+
+# Create a non-root user
+RUN addgroup -S myuser && adduser -S myuser -G myuser
+
+# Copy the application and installed gems from the build stage
+COPY --from=builder /usr/local/bundle /usr/local/bundle
+COPY --from=builder /myapp /myapp 
+
+# Set the correct file permissions for the working directory (must be done as root)
+RUN chown -R myuser:myuser /myapp
+
+# Switch to the non-root user
+USER myuser
+
+# Expose port 3000 (default for Rails)
 EXPOSE 3000
 
-# Start the application
-CMD ["bundle", "exec", "rackup", "config.ru", "-o", "0.0.0.0", "-p", "3000"]
+# Command to start the Rails server
+
+CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
+

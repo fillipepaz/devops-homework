@@ -3,7 +3,7 @@ include "root" {
 }
 
 locals {
-  environment = "demo"
+  environment = "prod"
 }
 
 
@@ -57,6 +57,7 @@ inputs = {
   use_nlb_dns = true
   app_replicas = 2
   chart_path = "${get_repo_root()}/helm/ruby-app"
+  image_tag = "06563a9905eb0a2d90ed5a0df64313d7bd789301"
 }
 
 terraform {
@@ -64,10 +65,4 @@ terraform {
 }
 # Show application URL after successful apply
 
-/*terraform {
-  
-  after_hook "show_app_url" {
-    commands = ["apply"]
-    execute  = ["sh", "-c", "echo '\nApplication will be available at: http://'$(terraform output -raw application_url)'\n'"]
-  }
-}*/
+

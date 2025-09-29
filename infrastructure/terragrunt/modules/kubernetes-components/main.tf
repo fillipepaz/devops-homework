@@ -121,7 +121,7 @@ resource "helm_release" "nginx_ingress" {
           "server-snippet" = "proxy_ssl_verify off;"
         }
         extraArgs = {
-          "allow-snippet-annotations" = true
+         # "allow-snippet-annotations" = true
           "default-ssl-certificate" = "ingress-nginx/default-certificate"
         }
       }

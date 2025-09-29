@@ -12,8 +12,23 @@ locals {
   public_subnet_ids  = var.create_vpc ? module.vpc[0].public_subnets : var.public_subnets
   
   # Calculate subnet CIDRs for new VPC - ensuring no overlap with larger subnets
-  calculated_private_subnets = ["10.0.0.0/19", "10.0.32.0/19"]#[for k, v in var.azs : cidrsubnet(var.vpc_cidr, 3, k)]
-  calculated_public_subnets  = ["10.0.128.0/19","10.0.160.0/19"]
+  #calculated_private_subnets = ["10.0.0.0/19", "10.0.32.0/19"]#[for k, v in var.azs : cidrsubnet(var.vpc_cidr, 3, k)]
+  #calculated_public_subnets  = ["10.0.128.0/19","10.0.160.0/19"]
+
+
+  private_base = cidrsubnet(var.vpc_cidr, 1, 0) # 10.0.0.0/17
+  public_base  = cidrsubnet(var.vpc_cidr, 1, 1) # 10.0.128.0/17
+
+  calculated_private_subnets = [
+    for i in range(length(var.azs)) :
+    cidrsubnet(local.private_base, 2, i) # /19
+  ]
+
+  calculated_public_subnets = [
+    for i in range(length(var.azs)) :
+    cidrsubnet(local.public_base, 2, i) # /19
+  ]
+
   
   common_tags = {
     Environment = var.environment
