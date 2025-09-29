@@ -40,13 +40,13 @@ cd ../../helm/
 helm install ruby-app ruby-app
 ```
 
-After application is installed using Helm, wait for Ready status using the command bellow:
+After installing the application using Helm, wait for Ready status using the bellow command:
 ```bash
-#Check exposed service.
-kubectl port-forward svc/ruby-app 3000
+#Check pod status
+kubectl get pods
 ```
 
-When the pods were ready, run the following command:
+When the pods are ready, run the following command:
 
 ```bash
 kubectl port-forward svc/ruby-app 3000
