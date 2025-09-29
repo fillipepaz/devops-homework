@@ -200,7 +200,7 @@ terragrunt run-all apply   # Apply all changes
 
 To destroy the infrastructure:
 ```bash
-cd ..
+cd infrastructure/terragrunt/demo ## Before, check if you are in root path of the repository.
 ```
 ```bash
 terragrunt run-all destroy
