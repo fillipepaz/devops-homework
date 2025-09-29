@@ -31,12 +31,12 @@ build-iPhoneSimulator/
 # https://guides.cocoapods.org/using/using-cocoapods.html#should-i-check-the-pods-directory-into-source-control
 #
 # vendor/Pods/
-bundle/
-bin/
-/vendor/
-/vendor/bundle/
-vendor/ruby/
-/vendor/*
+#bundle/
+#bin/
+#/vendor/
+#/vendor/bundle/
+#vendor/ruby/
+#/vendor/*
 ## Documentation cache and generated files:
 /.yardoc/
 /_yardoc/
@@ -45,7 +45,7 @@ vendor/ruby/
 
 ## Environment normalization:
 /.bundle/
-/vendor/bundle
+#/vendor/bundle
 /lib/bundler/man/
 
 *.tfstate
@@ -73,7 +73,7 @@ vendor/ruby/
 
 # Bundler specific
 /.bundle/
-/vendor/bundle
+#/vendor/bundle
 /lib/bundler/man/
 
 # Environment specific
