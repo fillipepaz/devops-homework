@@ -102,7 +102,7 @@ module "eks" {
       # Add IAM policies for node group
       iam_role_additional_policies = {
         # Policy for managing EC2 networking
-        networking = "arn:aws:iam::aws:policy/AmazonVPCFullAccess"
+        #networking = "arn:aws:iam::aws:policy/AmazonVPCFullAccess"
         # Policy for ELB operations
         elb = "arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess"
       }

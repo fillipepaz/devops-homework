@@ -27,4 +27,9 @@ inputs = {
   environment = local.environment
   vpc_id = dependency.vpc.outputs.vpc_id
   private_subnets = dependency.vpc.outputs.private_subnets
+  cluster_version = "1.33"
+      instance_types  = ["t3.medium"]
+      min_size       = 2
+      max_size       = 4
+      desired_size   = 2
 }
