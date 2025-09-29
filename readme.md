@@ -200,7 +200,7 @@ terragrunt run-all apply   # Apply all changes
 
 To destroy the infrastructure:
 ```bash
-cd ..
+cd infrastructure/terragrunt/demo ## Before, check if you are in root path of the repository.
 ```
 ```bash
 terragrunt run-all destroy
@@ -218,6 +218,10 @@ Using ArgoCD, for example, we could create applications based on the Helm chart 
 
 In this homework, this process has been simplified to ensure that the entire environment is available in a simpler way. One possible approach for updating the software version would be to generate a pull request for the branch that triggered the image update. This pull request will replace the image version tag using the application module's inputs. 
 After that, a workflow can be triggered to execute terragrunt's apply on the application module of the changed environment.
+
+The figure bellow summarize this idea.
+
+![Arch](https://github.com/fillipepaz/devops-homework/blob/develop/docs/homework-arch.png)
 
 ## 5. How would you manage your terraform state file for multiple environments? e.g stage, prod, demo.
 
